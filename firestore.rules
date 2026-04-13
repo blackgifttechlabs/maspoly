@@ -1,19 +1,10 @@
-
-1
 rules_version = '2';
-2
-​
-3
+
 service cloud.firestore {
-4
   match /databases/{database}/documents {
-5
+    // WARNING: Open rules for testing only. Do NOT use in production.
     match /{document=**} {
-6
-      allow read, write: if false;
-7
+      allow read, write: if true;
     }
-8
   }
-9
 }

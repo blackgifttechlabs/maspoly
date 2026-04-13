@@ -4,10 +4,6 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 admin.initializeApp();
 
 exports.createPayNowCheckout = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError("unauthenticated", "Login is required before checkout.");
-  }
-
   const { orderId, amount, email } = request.data || {};
   if (!orderId || !amount || !email) {
     throw new HttpsError("invalid-argument", "orderId, amount, and email are required.");
@@ -26,10 +22,6 @@ exports.createPayNowCheckout = onCall(async (request) => {
 });
 
 exports.markInventoryAfterPayment = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError("unauthenticated", "Login is required.");
-  }
-
   const { orderId } = request.data || {};
   if (!orderId) {
     throw new HttpsError("invalid-argument", "orderId is required.");

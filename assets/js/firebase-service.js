@@ -22,35 +22,17 @@ function stamp() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function withTimeout(promise, fallback, milliseconds = 3500) {
-  return Promise.race([
-    promise,
-    new Promise((resolve) => {
-      window.setTimeout(() => resolve(fallback), milliseconds);
-    })
-  ]);
-}
-
 export async function getProducts() {
   if (!firebaseReady) return readLocal(LOCAL_PRODUCTS, sampleProducts);
+  const firebaseApi = await getFirebaseApi();
 
-  try {
-    const firebaseApi = await withTimeout(getFirebaseApi(), null);
-    if (!firebaseApi) return sampleProducts;
-
-    const snap = await withTimeout(firebaseApi.getDocs(
-      firebaseApi.query(
-        firebaseApi.collection(firebaseApi.db, "products"),
-        firebaseApi.orderBy("createdAt", "desc")
-      )
-    ), null);
-    if (!snap) return sampleProducts;
-    const products = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
-    return products.length ? products : sampleProducts;
-  } catch (error) {
-    console.warn("Using sample products because Firestore products could not be loaded.", error);
-    return sampleProducts;
-  }
+  const snap = await firebaseApi.getDocs(
+    firebaseApi.query(
+      firebaseApi.collection(firebaseApi.db, "products"),
+      firebaseApi.orderBy("createdAt", "desc")
+    )
+  );
+  return snap.docs.map((item) => ({ id: item.id, ...item.data() }));
 }
 
 export async function getProduct(id) {
@@ -164,21 +146,12 @@ export async function rateProduct(productId, rating, review = "") {
 
 export async function getNews() {
   if (!firebaseReady) return readLocal(LOCAL_NEWS, sampleNews);
+  const firebaseApi = await getFirebaseApi();
 
-  try {
-    const firebaseApi = await withTimeout(getFirebaseApi(), null);
-    if (!firebaseApi) return sampleNews;
-
-    const snap = await withTimeout(firebaseApi.getDocs(
-      firebaseApi.query(firebaseApi.collection(firebaseApi.db, "news"), firebaseApi.orderBy("date", "desc"))
-    ), null);
-    if (!snap) return sampleNews;
-    const news = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
-    return news.length ? news : sampleNews;
-  } catch (error) {
-    console.warn("Using sample news because Firestore news could not be loaded.", error);
-    return sampleNews;
-  }
+  const snap = await firebaseApi.getDocs(
+    firebaseApi.query(firebaseApi.collection(firebaseApi.db, "news"), firebaseApi.orderBy("date", "desc"))
+  );
+  return snap.docs.map((item) => ({ id: item.id, ...item.data() }));
 }
 
 export async function saveArticle(article) {
@@ -214,22 +187,14 @@ export async function getOrders(userId = null) {
     const orders = readLocal(LOCAL_ORDERS, sampleOrders);
     return userId ? orders.filter((order) => order.userId === userId || userId === "demo-user") : orders;
   }
-  try {
-    const firebaseApi = await withTimeout(getFirebaseApi(), null);
-    if (!firebaseApi) return sampleOrders;
+  const firebaseApi = await getFirebaseApi();
 
-    const base = firebaseApi.collection(firebaseApi.db, "orders");
-    const q = userId
-      ? firebaseApi.query(base, firebaseApi.where("userId", "==", userId), firebaseApi.orderBy("createdAt", "desc"))
-      : firebaseApi.query(base, firebaseApi.orderBy("createdAt", "desc"));
-    const snap = await withTimeout(firebaseApi.getDocs(q), null);
-    if (!snap) return sampleOrders;
-    const orders = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
-    return orders.length ? orders : sampleOrders;
-  } catch (error) {
-    console.warn("Using sample orders because Firestore orders could not be loaded.", error);
-    return sampleOrders;
-  }
+  const base = firebaseApi.collection(firebaseApi.db, "orders");
+  const q = userId
+    ? firebaseApi.query(base, firebaseApi.where("userId", "==", userId), firebaseApi.orderBy("createdAt", "desc"))
+    : firebaseApi.query(base, firebaseApi.orderBy("createdAt", "desc"));
+  const snap = await firebaseApi.getDocs(q);
+  return snap.docs.map((item) => ({ id: item.id, ...item.data() }));
 }
 
 export async function createOrder(order) {
@@ -268,19 +233,10 @@ export async function updateOrderStatus(id, status) {
 
 export async function getUsers() {
   if (!firebaseReady) return readLocal(LOCAL_USERS, sampleUsers);
+  const firebaseApi = await getFirebaseApi();
 
-  try {
-    const firebaseApi = await withTimeout(getFirebaseApi(), null);
-    if (!firebaseApi) return sampleUsers;
-
-    const snap = await withTimeout(firebaseApi.getDocs(firebaseApi.collection(firebaseApi.db, "users")), null);
-    if (!snap) return sampleUsers;
-    const users = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
-    return users.length ? users : sampleUsers;
-  } catch (error) {
-    console.warn("Using sample users because Firestore users could not be loaded.", error);
-    return sampleUsers;
-  }
+  const snap = await firebaseApi.getDocs(firebaseApi.collection(firebaseApi.db, "users"));
+  return snap.docs.map((item) => ({ id: item.id, ...item.data() }));
 }
 
 export async function registerUser({ name, email, password }) {
@@ -338,13 +294,8 @@ export async function getCurrentUser() {
         resolve(null);
         return;
       }
-      try {
-        const snap = await firebaseApi.getDoc(firebaseApi.doc(firebaseApi.db, "users", authUser.uid));
-        resolve(snap.exists() ? { id: snap.id, ...snap.data() } : { id: authUser.uid, email: authUser.email });
-      } catch (error) {
-        console.warn("Signed in, but Firestore user profile could not be read.", error);
-        resolve({ id: authUser.uid, email: authUser.email, role: "customer", status: "active" });
-      }
+      const snap = await firebaseApi.getDoc(firebaseApi.doc(firebaseApi.db, "users", authUser.uid));
+      resolve(snap.exists() ? { id: snap.id, ...snap.data() } : { id: authUser.uid, email: authUser.email });
     });
   });
 }
@@ -371,16 +322,18 @@ export async function updateUserProfile(profile) {
   }
 
   const firebaseApi = await getFirebaseApi();
-  const authUser = firebaseApi.auth.currentUser;
-  if (!authUser) throw new Error("Login is required before saving account details.");
 
-  await firebaseApi.setDoc(firebaseApi.doc(firebaseApi.db, "users", authUser.uid), {
+  const authUser = firebaseApi.auth.currentUser;
+  // If not authenticated, create or reuse an anonymous user id for testing.
+  const uid = authUser ? authUser.uid : `anon-${localStorage.getItem(LOCAL_SESSION) || Date.now()}`;
+
+  await firebaseApi.setDoc(firebaseApi.doc(firebaseApi.db, "users", uid), {
     ...cleaned,
     updatedAt: firebaseApi.serverTimestamp()
   }, { merge: true });
 
-  const snap = await firebaseApi.getDoc(firebaseApi.doc(firebaseApi.db, "users", authUser.uid));
-  return snap.exists() ? { id: snap.id, ...snap.data() } : { id: authUser.uid, ...cleaned };
+  const snap = await firebaseApi.getDoc(firebaseApi.doc(firebaseApi.db, "users", uid));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : { id: uid, ...cleaned };
 }
 
 export async function banUser(id, status) {

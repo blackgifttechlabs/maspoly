@@ -36,6 +36,8 @@ export async function getProducts() {
 }
 
 export async function getProduct(id) {
+  if (!id) return null;
+
   if (!firebaseReady) {
     return readLocal(LOCAL_PRODUCTS, sampleProducts).find((item) => item.id === id);
   }

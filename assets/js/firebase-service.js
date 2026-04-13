@@ -338,8 +338,13 @@ export async function getCurrentUser() {
         resolve(null);
         return;
       }
-      const snap = await firebaseApi.getDoc(firebaseApi.doc(firebaseApi.db, "users", authUser.uid));
-      resolve(snap.exists() ? { id: snap.id, ...snap.data() } : { id: authUser.uid, email: authUser.email });
+      try {
+        const snap = await firebaseApi.getDoc(firebaseApi.doc(firebaseApi.db, "users", authUser.uid));
+        resolve(snap.exists() ? { id: snap.id, ...snap.data() } : { id: authUser.uid, email: authUser.email });
+      } catch (error) {
+        console.warn("Signed in, but Firestore user profile could not be read.", error);
+        resolve({ id: authUser.uid, email: authUser.email, role: "customer", status: "active" });
+      }
     });
   });
 }

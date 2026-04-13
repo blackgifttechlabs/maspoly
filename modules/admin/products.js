@@ -11,6 +11,8 @@ if (await requireAdminPin()) {
   const list = qs("[data-product-list]");
   const imageUpload = qs("[data-image-upload]");
   const imagePreview = qs("[data-image-preview]");
+  const imageProgress = qs("[data-image-progress]");
+  const imageProgressBar = imageProgress ? imageProgress.querySelector('.upload-progress-bar') : null;
   let products = await getProducts();
 
   function render() {
@@ -55,9 +57,19 @@ if (await requireAdminPin()) {
   imageUpload.addEventListener("change", async () => {
     const file = imageUpload.files[0];
     if (!file) return;
-    const dataUrl = await readImageAsDataUrl(file);
-    form.elements.image.value = dataUrl;
-    imagePreview.innerHTML = `<img src="${dataUrl}" alt="Uploaded product preview">`;
+    try {
+      if (imageProgress) {
+        imageProgress.hidden = false;
+        if (imageProgressBar) imageProgressBar.style.width = '0%';
+      }
+      const dataUrl = await readImageAsDataUrl(file, (percent) => {
+        if (imageProgressBar) imageProgressBar.style.width = percent + '%';
+      });
+      form.elements.image.value = dataUrl;
+      imagePreview.innerHTML = `<img src="${dataUrl}" alt="Uploaded product preview">`;
+    } finally {
+      if (imageProgress) imageProgress.hidden = true;
+    }
   });
 
   form.addEventListener("submit", async (event) => {
@@ -78,11 +90,17 @@ if (await requireAdminPin()) {
   render();
 }
 
-function readImageAsDataUrl(file) {
+function readImageAsDataUrl(file, onProgress) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
     reader.onerror = () => reject(new Error("Image upload failed."));
+    reader.onprogress = (e) => {
+      if (e.lengthComputable && typeof onProgress === 'function') {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        onProgress(percent);
+      }
+    };
     reader.readAsDataURL(file);
   });
 }

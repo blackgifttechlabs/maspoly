@@ -741,6 +741,21 @@ select {
   padding: 10px;
 }
 
+.upload-progress {
+  margin-top: 8px;
+  height: 10px;
+  background: #eef2f5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.upload-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--sky), var(--green));
+  transition: width 150ms linear;
+}
+
 .site-footer {
   display: grid;
   grid-template-columns: minmax(220px, 1.3fr) repeat(3, minmax(160px, 1fr));

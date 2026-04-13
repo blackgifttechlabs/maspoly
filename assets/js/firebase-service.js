@@ -1,4 +1,4 @@
-import { firebaseReady, getFirebaseApi } from "./firebase-config.js";
+import { firebaseReady, getFirebaseApi, firebaseConfig } from "./firebase-config.js";
 import { sampleNews, sampleOrders, sampleProducts, sampleUsers } from "./sample-data.js";
 
 const LOCAL_USERS = "polymart-users";
@@ -368,13 +368,66 @@ export async function createPayNowCheckout(order) {
   }
   const firebaseApi = await getFirebaseApi();
 
-  const callable = firebaseApi.httpsCallable(firebaseApi.functions, "createPayNowCheckout");
-  const result = await callable({
-    orderId: order.id,
-    amount: order.total,
-    email: order.customerEmail
+  // Update the order document directly from the client (for testing/demo).
+  const orderRef = firebaseApi.doc(firebaseApi.db, "orders", order.id);
+  await firebaseApi.updateDoc(orderRef, {
+    paymentProvider: "PayNow",
+    paymentStatus: "checkout-started",
+    updatedAt: firebaseApi.serverTimestamp()
   });
-  return result.data;
+
+  return {
+    message: "Client-side checkout started.",
+    redirectUrl: `/pages/orders.html?order=${encodeURIComponent(order.id)}`
+  };
+}
+
+export async function markInventoryAfterPayment(orderId) {
+  if (!firebaseReady) {
+    // local demo: adjust local storage orders/products
+    const orders = readLocal(LOCAL_ORDERS, sampleOrders);
+    const order = orders.find((o) => o.id === orderId);
+    if (!order) throw new Error("Order not found.");
+
+    const products = readLocal(LOCAL_PRODUCTS, sampleProducts);
+    const nextProducts = products.map((p) => {
+      const item = (order.items || []).find((i) => i.productId === p.id);
+      if (!item) return p;
+      return { ...p, stock: Math.max((p.stock || 0) - Number(item.quantity || 0), 0) };
+    });
+    writeLocal(LOCAL_PRODUCTS, nextProducts);
+
+    writeLocal(LOCAL_ORDERS, orders.map((o) => o.id === orderId ? { ...o, paymentStatus: "paid", status: "processing" } : o));
+    return { ok: true };
+  }
+
+  const firebaseApi = await getFirebaseApi();
+  const db = firebaseApi.db;
+
+  const orderSnap = await firebaseApi.getDoc(firebaseApi.doc(db, "orders", orderId));
+  if (!orderSnap.exists()) throw new Error("Order not found.");
+  const order = { id: orderSnap.id, ...orderSnap.data() };
+
+  const items = order.items || [];
+  for (const item of items) {
+    const productRef = firebaseApi.doc(db, "products", item.productId);
+    const productSnap = await firebaseApi.getDoc(productRef);
+    if (productSnap.exists()) {
+      const stock = productSnap.data().stock || 0;
+      await firebaseApi.updateDoc(productRef, {
+        stock: Math.max(stock - Number(item.quantity || 0), 0),
+        updatedAt: firebaseApi.serverTimestamp()
+      });
+    }
+  }
+
+  await firebaseApi.updateDoc(firebaseApi.doc(db, "orders", orderId), {
+    paymentStatus: "paid",
+    status: "processing",
+    updatedAt: firebaseApi.serverTimestamp()
+  });
+
+  return { ok: true };
 }
 
 export async function getAdminPin() {

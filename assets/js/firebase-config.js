@@ -23,6 +23,8 @@ export async function getFirebaseApi() {
   ]).then(([appModule, authModule, firestoreModule, functionsModule]) => {
     const app = appModule.initializeApp(firebaseConfig);
 
+     console.log("Firebase project:", app.options.projectId); 
+
     return {
       app,
       auth: authModule.getAuth(app),

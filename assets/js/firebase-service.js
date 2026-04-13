@@ -38,12 +38,13 @@ export async function getProducts() {
     const firebaseApi = await withTimeout(getFirebaseApi(), null);
     if (!firebaseApi) return sampleProducts;
 
-    const snap = await firebaseApi.getDocs(
+    const snap = await withTimeout(firebaseApi.getDocs(
       firebaseApi.query(
         firebaseApi.collection(firebaseApi.db, "products"),
         firebaseApi.orderBy("createdAt", "desc")
       )
-    );
+    ), null);
+    if (!snap) return sampleProducts;
     const products = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
     return products.length ? products : sampleProducts;
   } catch (error) {
@@ -168,9 +169,10 @@ export async function getNews() {
     const firebaseApi = await withTimeout(getFirebaseApi(), null);
     if (!firebaseApi) return sampleNews;
 
-    const snap = await firebaseApi.getDocs(
+    const snap = await withTimeout(firebaseApi.getDocs(
       firebaseApi.query(firebaseApi.collection(firebaseApi.db, "news"), firebaseApi.orderBy("date", "desc"))
-    );
+    ), null);
+    if (!snap) return sampleNews;
     const news = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
     return news.length ? news : sampleNews;
   } catch (error) {
@@ -212,14 +214,22 @@ export async function getOrders(userId = null) {
     const orders = readLocal(LOCAL_ORDERS, sampleOrders);
     return userId ? orders.filter((order) => order.userId === userId || userId === "demo-user") : orders;
   }
-  const firebaseApi = await getFirebaseApi();
+  try {
+    const firebaseApi = await withTimeout(getFirebaseApi(), null);
+    if (!firebaseApi) return sampleOrders;
 
-  const base = firebaseApi.collection(firebaseApi.db, "orders");
-  const q = userId
-    ? firebaseApi.query(base, firebaseApi.where("userId", "==", userId), firebaseApi.orderBy("createdAt", "desc"))
-    : firebaseApi.query(base, firebaseApi.orderBy("createdAt", "desc"));
-  const snap = await firebaseApi.getDocs(q);
-  return snap.docs.map((item) => ({ id: item.id, ...item.data() }));
+    const base = firebaseApi.collection(firebaseApi.db, "orders");
+    const q = userId
+      ? firebaseApi.query(base, firebaseApi.where("userId", "==", userId), firebaseApi.orderBy("createdAt", "desc"))
+      : firebaseApi.query(base, firebaseApi.orderBy("createdAt", "desc"));
+    const snap = await withTimeout(firebaseApi.getDocs(q), null);
+    if (!snap) return sampleOrders;
+    const orders = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
+    return orders.length ? orders : sampleOrders;
+  } catch (error) {
+    console.warn("Using sample orders because Firestore orders could not be loaded.", error);
+    return sampleOrders;
+  }
 }
 
 export async function createOrder(order) {
@@ -258,10 +268,19 @@ export async function updateOrderStatus(id, status) {
 
 export async function getUsers() {
   if (!firebaseReady) return readLocal(LOCAL_USERS, sampleUsers);
-  const firebaseApi = await getFirebaseApi();
 
-  const snap = await firebaseApi.getDocs(firebaseApi.collection(firebaseApi.db, "users"));
-  return snap.docs.map((item) => ({ id: item.id, ...item.data() }));
+  try {
+    const firebaseApi = await withTimeout(getFirebaseApi(), null);
+    if (!firebaseApi) return sampleUsers;
+
+    const snap = await withTimeout(firebaseApi.getDocs(firebaseApi.collection(firebaseApi.db, "users")), null);
+    if (!snap) return sampleUsers;
+    const users = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
+    return users.length ? users : sampleUsers;
+  } catch (error) {
+    console.warn("Using sample users because Firestore users could not be loaded.", error);
+    return sampleUsers;
+  }
 }
 
 export async function registerUser({ name, email, password }) {

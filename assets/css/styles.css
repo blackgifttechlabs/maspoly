@@ -289,6 +289,10 @@ select {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.dashboard-panel {
+  grid-column: span 3;
+}
+
 .stat,
 .product-card,
 .news-card,
@@ -690,6 +694,20 @@ select {
   overflow-wrap: anywhere;
 }
 
+.mini-row {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+
+.mini-row span {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
 .map-placeholder {
   min-height: 240px;
   display: grid;
@@ -822,6 +840,10 @@ select {
 
   .toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-panel {
+    grid-column: span 1;
   }
 }
 

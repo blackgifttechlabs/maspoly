@@ -156,6 +156,14 @@ export async function getNews() {
   return snap.docs.map((item) => ({ id: item.id, ...item.data() }));
 }
 
+export async function getArticle(id) {
+  if (!id) return null;
+  if (!firebaseReady) return readLocal(LOCAL_NEWS, sampleNews).find((item) => item.id === id) || null;
+  const firebaseApi = await getFirebaseApi();
+  const snap = await firebaseApi.getDoc(firebaseApi.doc(firebaseApi.db, "news", id));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
 export async function saveArticle(article) {
   if (!firebaseReady) {
     const news = readLocal(LOCAL_NEWS, sampleNews);

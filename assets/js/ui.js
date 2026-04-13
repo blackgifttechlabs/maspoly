@@ -163,10 +163,12 @@ export function productCard(product) {
 export function newsCard(article) {
   return `
     <article class="news-card">
-      <img src="${article.image}" alt="${article.title}" loading="lazy">
+      <a href="${getPrefix()}pages/news-details.html?id=${encodeURIComponent(article.id)}">
+        <img src="${article.image}" alt="${article.title}" loading="lazy">
+      </a>
       <div>
         <span class="pill">${article.category}</span>
-        <h3>${article.title}</h3>
+        <h3><a class="plain-link" href="${getPrefix()}pages/news-details.html?id=${encodeURIComponent(article.id)}">${article.title}</a></h3>
         <p>${article.body}</p>
         <small>${article.date}</small>
       </div>

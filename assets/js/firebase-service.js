@@ -61,6 +61,7 @@ export async function saveProduct(product) {
   const id = product.id || product.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   await firebaseApi.setDoc(firebaseApi.doc(firebaseApi.db, "products", id), {
     ...product,
+    id,
     price: Number(product.price),
     stock: Number(product.stock),
     rating: Number(product.rating || 0),
@@ -176,6 +177,7 @@ export async function saveArticle(article) {
   const id = article.id || article.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   await firebaseApi.setDoc(firebaseApi.doc(firebaseApi.db, "news", id), {
     ...article,
+    id,
     date: article.date || stamp(),
     updatedAt: firebaseApi.serverTimestamp()
   }, { merge: true });

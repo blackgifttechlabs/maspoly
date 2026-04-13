@@ -1,0 +1,10 @@
+{
+  "name": "polymart",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Masvingp Polytechnic Group 17 university e-commerce website using Firebase, PayNow handoff, and Google Maps delivery capture.",
+  "scripts": {
+    "serve": "python3 -m http.server 4173",
+    "check:js": "find assets modules functions -name '*.js' -print -exec node --check {} \\;"
+  }
+}

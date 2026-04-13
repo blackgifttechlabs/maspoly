@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login | Polymart</title>
+    <link rel="icon" href="https://i.ibb.co/B5GMcb9z/Gemini-Generated-Image-mmtbiymmtbiymmtb-removebg-preview.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+  </head>
+  <body>
+    <header class="site-header" data-site-header></header>
+    <main class="auth-wrap">
+      <section class="auth-box">
+        <h1>Account Access</h1>
+        <p class="muted">Use Firebase Authentication for live accounts. Demo mode accepts registered local users.</p>
+        <div class="notice" data-notice hidden></div>
+        <div data-signed-in-actions hidden></div>
+        <form class="form-grid" data-login-form>
+          <h2>Login</h2>
+          <label>
+            Email
+            <input class="input" name="email" type="email" required>
+          </label>
+          <label>
+            Password
+            <input class="input" name="password" type="password" required>
+          </label>
+          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+          <p class="auth-switch">New customer? <button type="button" data-auth-mode="register">Create an account</button></p>
+        </form>
+        <form class="form-grid" data-register-form hidden>
+          <h2>Create Account</h2>
+          <label>
+            Full name
+            <input class="input" name="name" required>
+          </label>
+          <label>
+            Email
+            <input class="input" name="email" type="email" required>
+          </label>
+          <label>
+            Password
+            <input class="input" name="password" type="password" minlength="6" required>
+          </label>
+          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-user-plus"></i> Create Account</button>
+          <p class="auth-switch">Already have an account? <button type="button" data-auth-mode="login">Login</button></p>
+        </form>
+      </section>
+    </main>
+    <footer class="site-footer" data-site-footer></footer>
+    <script type="module" src="../modules/customer/auth.js"></script>
+  </body>
+</html>

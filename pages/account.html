@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Account | Polymart</title>
+    <link rel="icon" href="https://i.ibb.co/B5GMcb9z/Gemini-Generated-Image-mmtbiymmtbiymmtb-removebg-preview.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+  </head>
+  <body>
+    <header class="site-header" data-site-header></header>
+    <main>
+      <section class="page-title">
+        <h1>My Account</h1>
+        <p>Save your contact and delivery details so checkout fills them in automatically.</p>
+      </section>
+      <section class="section">
+        <div class="checkout-layout">
+          <form class="panel form-grid" data-account-form>
+            <h2>Purchasing Details</h2>
+            <div class="notice" data-notice hidden></div>
+            <div class="form-grid two">
+              <label>
+                Full name
+                <input class="input" name="name" required>
+              </label>
+              <label>
+                Email
+                <input class="input" name="email" type="email" required>
+              </label>
+            </div>
+            <div class="form-grid two">
+              <label>
+                Phone number
+                <input class="input" name="phone" required>
+              </label>
+              <label>
+                City or area
+                <input class="input" name="city" placeholder="Masvingo">
+              </label>
+            </div>
+            <label>
+              Default delivery address
+              <textarea class="textarea" name="address" required placeholder="Hostel, office, department, street, or pickup point"></textarea>
+            </label>
+            <label>
+              Delivery notes
+              <textarea class="textarea" name="notes" placeholder="Preferred pickup time, department, or directions"></textarea>
+            </label>
+            <div class="button-row">
+              <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save Details</button>
+              <button class="btn btn-outline" type="button" data-logout><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+          </form>
+          <aside class="summary-box">
+            <h2>Account Benefits</h2>
+            <div class="summary-line"><span><i class="fa-solid fa-check"></i> Faster checkout</span></div>
+            <div class="summary-line"><span><i class="fa-solid fa-check"></i> Saved delivery address</span></div>
+            <div class="summary-line"><span><i class="fa-solid fa-check"></i> Order tracking linked to your account</span></div>
+            <a class="btn btn-outline" href="orders.html">View Orders</a>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer" data-site-footer></footer>
+    <script type="module" src="../modules/customer/account.js"></script>
+  </body>
+</html>
+
